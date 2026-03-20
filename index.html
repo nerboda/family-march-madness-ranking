@@ -62,7 +62,7 @@
 
   <script>
     const CSV_URL =
-      'https://docs.google.com/spreadsheets/d/e/2PACX-1vRw89bTgxeDV0r5-rwGSbtkzHocoQn72Ohk_8q8hEBAXrWjoWAWhFegebPkegXAHidbPXYfxLq4UPIW/pub?gid=1944410201&single=true&output=csv';
+      'https://docs.google.com/spreadsheets/d/e/2PACX-1vRw89bTgxeDV0r5-rwGSbtkzHocoQn72Ohk_8q8hEBAXrWjoWAWhFegebPkegXAHidbPXYfxLq4UPIW/pub?gid=1673277535&single=true&output=csv';
 
     const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
@@ -146,9 +146,10 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-baseline gap-2 flex-wrap">
               <span class="font-bold text-lg ${isTop ? 'text-white' : 'text-gray-200'}">${p.name}</span>
+              <span class="text-[11px] text-gray-500 font-medium">${teams.length} remaining</span>
             </div>
             <div class="mt-1.5 flex flex-wrap gap-1.5">
-              ${teams.map(t => `<span class="text-[11px] leading-tight px-2 py-0.5 rounded-full bg-white/[0.07] text-gray-400 whitespace-nowrap">${t}</span>`).join('')}
+              ${teams.map(t => `<span class="text-[11px] leading-tight px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/80 border border-emerald-500/20 whitespace-nowrap">${t}</span>`).join('')}
             </div>
           </div>
 
