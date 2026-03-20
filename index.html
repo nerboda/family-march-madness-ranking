@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family March Madness 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-row { animation: fade-in-up 0.4s ease-out both; }
+  </style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen font-sans">
+
+  <!-- Header -->
+  <div class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-orange-600/20 via-gray-950 to-blue-600/20"></div>
+    <div class="relative max-w-3xl mx-auto px-4 pt-12 pb-8 text-center">
+      <p class="text-5xl mb-3">🏀</p>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">March Madness 2026</h1>
+      <p class="text-gray-400 mt-2 text-sm font-medium uppercase tracking-widest">Family Leaderboard</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <main class="max-w-3xl mx-auto px-4 pb-16">
+
+    <!-- Loading state -->
+    <div id="loading" class="flex flex-col items-center justify-center py-20 gap-3">
+      <div class="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-500 text-sm">Loading scores&hellip;</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="error" class="hidden text-center py-20">
+      <p class="text-red-400 font-semibold">Failed to load data</p>
+      <p class="text-gray-500 text-sm mt-1">Please try refreshing the page.</p>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="leaderboard" class="hidden space-y-3"></div>
+
+    <!-- Footer note -->
+    <p id="footer" class="hidden text-center text-gray-600 text-xs mt-8">
+      Scores update automatically from the bracket sheet.
+    </p>
+  </main>
+
+  <script>
+    const CSV_URL =
+      'https://docs.google.com/spreadsheets/d/e/2PACX-1vRw89bTgxeDV0r5-rwGSbtkzHocoQn72Ohk_8q8hEBAXrWjoWAWhFegebPkegXAHidbPXYfxLq4UPIW/pub?gid=1944410201&single=true&output=csv';
+
+    const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
+
+    const RANK_COLORS = {
+      1: 'from-yellow-500/20 to-yellow-600/5 border-yellow-500/40',
+      2: 'from-gray-300/15 to-gray-400/5 border-gray-400/30',
+      3: 'from-amber-700/15 to-amber-800/5 border-amber-700/30',
+    };
+
+    // Handle quoted CSV fields with commas
+    function parseCSVRow(line) {
+      const fields = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          fields.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      fields.push(current.trim());
+      return fields;
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      const players = [];
+      for (let i = 2; i < lines.length; i++) {
+        const row = parseCSVRow(lines[i]);
+        const rank = parseInt(row[0], 10);
+        if (isNaN(rank)) continue;
+        players.push({
+          rank,
+          name: row[1],
+          teams: row[2],
+          score: parseInt(row[3], 10) || 0,
+          wins: parseInt(row[4], 10) || 0,
+        });
+      }
+      players.sort((a, b) => b.score - a.score || b.wins - a.wins);
+      return players;
+    }
+
+    function renderLeaderboard(players) {
+      const container = document.getElementById('leaderboard');
+      container.innerHTML = '';
+
+      players.forEach((p, i) => {
+        const medal = MEDAL[p.rank] || '';
+        const colors = RANK_COLORS[p.rank] || 'from-white/5 to-white/[0.02] border-white/10';
+        const isTop = p.rank <= 3;
+
+        const card = document.createElement('div');
+        card.className = `
+          animate-row
+          bg-gradient-to-r ${colors}
+          border rounded-xl px-4 sm:px-5 py-4
+          flex items-center gap-4
+          transition-transform hover:scale-[1.01]
+          ${isTop ? 'shadow-lg' : ''}
+        `.trim();
+        card.style.animationDelay = `${i * 60}ms`;
+
+        const teams = p.teams.split(',').map(t => t.trim());
+
+        card.innerHTML = `
+          <!-- Rank -->
+          <div class="flex-shrink-0 w-10 text-center">
+            ${medal
+              ? `<span class="text-2xl">${medal}</span>`
+              : `<span class="text-lg font-bold text-gray-500">${p.rank}</span>`
+            }
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span class="font-bold text-lg ${isTop ? 'text-white' : 'text-gray-200'}">${p.name}</span>
+            </div>
+            <div class="mt-1.5 flex flex-wrap gap-1.5">
+              ${teams.map(t => `<span class="text-[11px] leading-tight px-2 py-0.5 rounded-full bg-white/[0.07] text-gray-400 whitespace-nowrap">${t}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="flex-shrink-0 text-right">
+            <div class="text-2xl font-extrabold ${isTop ? 'text-orange-400' : 'text-gray-300'}">${p.score}</div>
+            <div class="text-[11px] text-gray-500 font-medium uppercase tracking-wide">${p.wins} win${p.wins !== 1 ? 's' : ''}</div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    async function init() {
+      try {
+        const res = await fetch(CSV_URL);
+        if (!res.ok) throw new Error('fetch failed');
+        const text = await res.text();
+        const players = parseCSV(text);
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('leaderboard').classList.remove('hidden');
+        document.getElementById('footer').classList.remove('hidden');
+        renderLeaderboard(players);
+      } catch (e) {
+        console.error(e);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
