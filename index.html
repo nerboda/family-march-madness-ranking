@@ -132,7 +132,7 @@
         `.trim();
         card.style.animationDelay = `${i * 60}ms`;
 
-        const teams = p.teams.split(',').map(t => t.trim());
+        const teams = p.teams.split(',').map(t => t.trim()).filter(t => t);
 
         card.innerHTML = `
           <!-- Rank -->
@@ -147,11 +147,11 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-baseline gap-2 flex-wrap">
               <span class="font-bold text-lg ${isTop ? 'text-white' : 'text-gray-200'}">${p.name}</span>
-              <span class="text-[11px] text-gray-500 font-medium">${teams.length} remaining</span>
+              <span class="text-[11px] text-gray-500 font-medium">${teams.length > 0 ? `${teams.length} remaining` : 'eliminated'}</span>
             </div>
-            <div class="mt-1.5 flex flex-wrap gap-1.5">
+            ${teams.length > 0 ? `<div class="mt-1.5 flex flex-wrap gap-1.5">
               ${teams.map(t => `<span class="text-[11px] leading-tight px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/80 border border-emerald-500/20 whitespace-nowrap">${t}</span>`).join('')}
-            </div>
+            </div>` : ''}
           </div>
 
           <!-- Stats -->
